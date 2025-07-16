@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My IP Info - Best Free IP Tracker</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --primary: #4fc3f7;
+      --bg: #f5f7fa;
+      --text: #1f1f1f;
+      --muted: #666;
+      --card: #ffffff;
+      --radius: 14px;
+      --shadow: 0 5px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background-color: var(--primary);
+      color: white;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    header p {
+      margin-top: 10px;
+      font-size: 1rem;
+      color: #e1f5fe;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background-color: var(--card);
+      padding: 25px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 30px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      color: var(--primary);
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .info-label {
+      color: var(--muted);
+    }
+
+    #map {
+      height: 400px;
+      border-radius: var(--radius);
+    }
+
+    #loading {
+      text-align: center;
+      padding: 20px 0;
+      color: var(--muted);
+    }
+
+    .refresh-btn {
+      margin-top: 15px;
+      background-color: var(--primary);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .refresh-btn:hover {
+      background-color: #03a9f4;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      .info-row {
+        flex-direction: column;
+        gap: 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>My IP Info</h1>
+    <p>Check your IP address, location, and more – instantly.</p>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>Network Details</h2>
+      <div id="loading">⏳ Fetching data...</div>
+      <div class="info-row"><span class="info-label">IP Address:</span> <span id="ip">-</span></div>
+      <div class="info-row"><span class="info-label">Location:</span> <span id="location">-</span></div>
+      <div class="info-row"><span class="info-label">Coordinates:</span> <span id="coords">-</span></div>
+      <div class="info-row"><span class="info-label">ISP/Org:</span> <span id="org">-</span></div>
+      <button class="refresh-btn" onclick="window.location.reload()">🔁 Refresh Info</button>
+    </div>
+
+    <div class="card">
+      <h2>Your Location</h2>
+      <div id="map"></div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 My IP Info — Powered by IPAPI & Leaflet. No API Key needed.
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    fetch("https://ipapi.co/json/")
+      .then(res => res.json())
+      .then(data => {
+        const { ip, city, region, country_name, latitude, longitude, org } = data;
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("ip").textContent = ip;
+        document.getElementById("location").textContent = `${city}, ${region}, ${country_name}`;
+        document.getElementById("coords").textContent = `${latitude}, ${longitude}`;
+        document.getElementById("org").textContent = org;
+
+        const map = L.map('map').setView([latitude, longitude], 10);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        L.marker([latitude, longitude])
+          .addTo(map)
+          .bindPopup(`<b>${city}</b><br>${region}, ${country_name}`)
+          .openPopup();
+      })
+      .catch(err => {
+        document.getElementById("loading").textContent = "⚠️ Failed to load data.";
+        console.error("Error fetching IP data:", err);
+      });
+  </script>
+</body>
+  </html>
